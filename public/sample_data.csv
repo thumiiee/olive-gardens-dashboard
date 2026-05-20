@@ -1,0 +1,13 @@
+Date,Unit,Category,Amount,Type
+2023-01-05,Flat 1,Rent,1500,Income
+2023-01-15,Flat 1,Repairs,200,Expense
+2023-01-08,Flat 2,Rent,1800,Income
+2023-01-12,Airbnb,Booking,500,Income
+2023-01-14,Airbnb,Cleaning,100,Expense
+2023-02-05,Flat 1,Rent,1500,Income
+2023-02-08,Flat 2,Rent,1800,Income
+2023-02-10,Flat 3,Rent,1400,Income
+2023-02-20,Flat 3,Contractors,500,Expense
+2023-03-01,Airbnb,Booking,1200,Income
+2023-03-05,Airbnb,Utilities,150,Expense
+2023-03-10,Flat 4,Rent,2000,Income
