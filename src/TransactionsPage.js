@@ -1,5 +1,6 @@
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip } from "@mui/material";
 import { useData } from "./DataContext";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 
 function TransactionsPage() {
   const { transactions, isLoaded } = useData();
@@ -15,13 +16,18 @@ function TransactionsPage() {
 
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={700} color="text.primary" gutterBottom>
-          All Transactions Ledger
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          A master list of all income and expenses across every property.
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ p: 1, bgcolor: 'primary.light', borderRadius: '12px', color: 'primary.dark', display: 'flex' }}>
+          <ListAltIcon fontSize="large" />
+        </Box>
+        <Box>
+          <Typography variant="h4" fontWeight={800} color="text.primary" gutterBottom>
+            All Transactions Ledger
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            A master list of all income and expenses across every property.
+          </Typography>
+        </Box>
       </Box>
 
       <TableContainer component={Paper} sx={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>

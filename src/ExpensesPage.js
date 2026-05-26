@@ -38,13 +38,18 @@ function ExpensesPage() {
 
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={700} color="text.primary" gutterBottom>
-          Expense Tracking
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Breakdown of your property expenses across categories.
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ p: 1, bgcolor: 'primary.light', borderRadius: '12px', color: 'primary.dark', display: 'flex' }}>
+          <ReceiptLongIcon fontSize="large" />
+        </Box>
+        <Box>
+          <Typography variant="h4" fontWeight={800} color="text.primary" gutterBottom>
+            Expense Tracking
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Breakdown of your property expenses across categories.
+          </Typography>
+        </Box>
       </Box>
 
       <Grid container spacing={3}>

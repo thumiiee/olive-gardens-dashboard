@@ -9,43 +9,48 @@ import TransactionsPage from "./TransactionsPage";
 import ExpensesPage from "./ExpensesPage";
 import SettingsPage from "./SettingsPage";
 import DataEntryPage from "./DataEntryPage";
+import TenantsPage from "./TenantsPage";
+import LoginPage from "./LoginPage";
 import Layout from "./Layout";
-import { DataProvider } from "./DataContext";
+import { DataProvider, useData } from "./DataContext";
 
-// Define a modern, vibrant theme
+// Define a modern, vibrant theme in Moss Green
 const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#A3B18A", // Sage Green
-      light: "#C0CDA5",
-      dark: "#7A8D68",
+      main: "#588157", // Rich Moss Green
+      light: "#A3B18A", // Light Sage
+      dark: "#3A5A40", // Dark Forest Moss Green
     },
     secondary: {
-      main: "#588157", // Darker Moss Green for contrast
+      main: "#3A5A40",
     },
     error: {
       main: "#D9534F", // Soft Red for expenses
     },
     background: {
-      default: "#F8FAF6", // Very light, warm white/sage tint background
-      paper: "#FFFFFF",
+      default: "#EFF2EC", // Softer, reduced brightness light background to reduce glare
+      paper: "#FCFDFB", // Slightly softened card background to reduce eye strain
     },
     text: {
-      primary: "#344E41", // Very dark green/grey for text
+      primary: "#2C3E35", // Deep forest green/grey for text
       secondary: "#6B7280",
     },
   },
   typography: {
     fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
     h4: {
-      fontWeight: 700,
+      fontWeight: 800,
+      color: "#2C3E35",
     },
     h5: {
-      fontWeight: 600,
+      fontWeight: 700,
+      color: "#2C3E35",
     },
     h6: {
       fontWeight: 600,
+      color: "#2C3E35",
     },
     subtitle1: {
       fontWeight: 500,
@@ -72,24 +77,37 @@ const theme = createTheme({
   },
 });
 
+function AppContent() {
+  const { user } = useData();
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/units" element={<UnitsPage />} />
+          <Route path="/units/:unitId" element={<UnitDetailsPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
+          <Route path="/data-entry" element={<DataEntryPage />} />
+          <Route path="/tenants" element={<TenantsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <DataProvider>
-        <Router>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/units" element={<UnitsPage />} />
-              <Route path="/units/:unitId" element={<UnitDetailsPage />} />
-              <Route path="/transactions" element={<TransactionsPage />} />
-              <Route path="/expenses" element={<ExpensesPage />} />
-              <Route path="/data-entry" element={<DataEntryPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
-          </Layout>
-        </Router>
+        <AppContent />
       </DataProvider>
     </ThemeProvider>
   );

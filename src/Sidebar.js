@@ -16,6 +16,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import SettingsIcon from "@mui/icons-material/Settings";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import PeopleIcon from "@mui/icons-material/People";
 
 function Sidebar({ drawerWidth, mobileOpen, handleDrawerToggle }) {
   const location = useLocation();
@@ -23,6 +24,7 @@ function Sidebar({ drawerWidth, mobileOpen, handleDrawerToggle }) {
   const menuItems = [
     { text: "Dashboard", path: "/", icon: <DashboardIcon /> },
     { text: "Units", path: "/units", icon: <HomeWorkIcon /> },
+    { text: "Tenants", path: "/tenants", icon: <PeopleIcon /> },
     { text: "Ledger", path: "/transactions", icon: <ListAltIcon /> },
     { text: "Expenses", path: "/expenses", icon: <ReceiptIcon /> },
     { text: "Data Entry", path: "/data-entry", icon: <UploadFileIcon /> },
@@ -31,12 +33,15 @@ function Sidebar({ drawerWidth, mobileOpen, handleDrawerToggle }) {
 
   const drawer = (
     <div>
-      <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: 1 }}>
-          MANAGEMENT
-        </Typography>
+      <Toolbar sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', py: 2.5, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <HomeWorkIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+          <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.dark', letterSpacing: 0.5 }}>
+            Olive Gardens
+          </Typography>
+        </Box>
       </Toolbar>
-      <List sx={{ px: 2 }}>
+      <List sx={{ px: 2, mt: 2 }}>
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -46,10 +51,10 @@ function Sidebar({ drawerWidth, mobileOpen, handleDrawerToggle }) {
                 to={item.path}
                 sx={{
                   borderRadius: '12px',
-                  backgroundColor: isActive ? 'primary.light' : 'transparent',
+                  backgroundColor: isActive ? 'primary.main' : 'transparent',
                   color: isActive ? 'white' : 'text.primary',
                   '&:hover': {
-                    backgroundColor: isActive ? 'primary.main' : 'rgba(0,0,0,0.04)',
+                    backgroundColor: isActive ? 'primary.dark' : 'rgba(0,0,0,0.04)',
                   },
                 }}
               >
@@ -58,7 +63,7 @@ function Sidebar({ drawerWidth, mobileOpen, handleDrawerToggle }) {
                 </ListItemIcon>
                 <ListItemText 
                   primary={item.text} 
-                  primaryTypographyProps={{ fontWeight: isActive ? 600 : 500 }} 
+                  primaryTypographyProps={{ fontWeight: isActive ? 700 : 500 }} 
                 />
               </ListItemButton>
             </ListItem>

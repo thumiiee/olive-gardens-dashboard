@@ -3,6 +3,7 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import MoneyOffIcon from '@mui/icons-material/MoneyOff';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import HomeIcon from '@mui/icons-material/Home';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import SummaryCard from "./SummaryCard";
 import Chart from "./Chart"; // IncomeExpenseChart
@@ -28,13 +29,18 @@ function Dashboard() {
 
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={700} color="text.primary" gutterBottom>
-          Dashboard Overview
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Welcome back! Here's what's happening with your properties today.
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ p: 1, bgcolor: 'primary.light', borderRadius: '12px', color: 'primary.dark', display: 'flex' }}>
+          <DashboardIcon fontSize="large" />
+        </Box>
+        <Box>
+          <Typography variant="h4" fontWeight={800} color="text.primary" gutterBottom>
+            Dashboard Overview
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Welcome back! Here's what's happening with your properties today.
+          </Typography>
+        </Box>
       </Box>
 
       {/* Summary Cards */}

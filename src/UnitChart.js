@@ -31,7 +31,7 @@ function UnitChart() {
     return acc;
   }, {});
 
-  const defaultUnits = ["Flat 1", "Flat 2", "Flat 3", "Flat 4", "Flat 5", "Flat 6", "Flat 7", "Airbnb"];
+  const defaultUnits = ["Flat 1", "Flat 2", "Flat 3", "Flat 4", "Flat 5", "Flat 6", "Flat 7", "Flat 8"];
   const allUnitNames = Array.from(new Set([...defaultUnits, ...Object.keys(unitStats)]));
 
   const labels = allUnitNames;
@@ -86,7 +86,7 @@ function UnitChart() {
       {
         label: "Profit",
         data: profits.length ? profits : [0],
-        backgroundColor: labels.map(l => l === "Airbnb" ? "#A3B18A" : "#C0CDA5"), // Airbnb in Darker Sage Green
+        backgroundColor: labels.map(l => (l === "Flat 8" || l.toLowerCase() === "airbnb") ? "#A3B18A" : "#C0CDA5"), // Flat 8 / Airbnb in Darker Sage Green
         borderRadius: 6,
       }
     ]

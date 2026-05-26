@@ -5,11 +5,43 @@ const DataContext = createContext();
 
 export const useData = () => useContext(DataContext);
 
+const normalizeUnitName = (name) => {
+  if (!name) return "Unknown";
+  const trimmed = name.trim();
+  if (trimmed.toLowerCase() === "airbnb") return "Flat 8"; // Map Airbnb back to Flat 8 for historical consistency
+  if (trimmed.toLowerCase().startsWith("flat ")) {
+    return "Flat " + trimmed.substring(5).trim();
+  }
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+};
+
 export const DataProvider = ({ children }) => {
   const [transactions, setTransactions] = useState([]);
   const [unitMetadata, setUnitMetadata] = useState({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Authentication State
+  const [user, setUser] = useState({
+    name: "Thumelo",
+    email: "manager@olivegardens.com",
+    role: "Property Manager",
+    avatar: "T"
+  });
+
+  const login = (email, password) => {
+    setUser({
+      name: "Thumelo",
+      email: email || "manager@olivegardens.com",
+      role: "Property Manager",
+      avatar: "T"
+    });
+    return true;
+  };
+
+  const logout = () => {
+    setUser(null);
+  };
 
   useEffect(() => {
     fetchData();
@@ -30,7 +62,10 @@ export const DataProvider = ({ children }) => {
         .select('*');
       
       if (txError) throw txError;
-      if (txData) setTransactions(txData);
+      if (txData) {
+        const normalizedData = txData.map(t => ({ ...t, unit: normalizeUnitName(t.unit) }));
+        setTransactions(normalizedData);
+      }
 
       // Fetch units metadata
       const { data: unitData, error: unitError } = await supabase
@@ -83,6 +118,7 @@ export const DataProvider = ({ children }) => {
   const addTransaction = async (transaction) => {
     const newTransaction = {
       ...transaction,
+      unit: normalizeUnitName(transaction.unit),
       id: transaction.id || Date.now().toString() + Math.random().toString(36).substring(2, 9),
       amount: parseFloat(transaction.amount) || 0
     };
@@ -104,6 +140,7 @@ export const DataProvider = ({ children }) => {
   const importData = async (newTransactions) => {
     const formattedData = newTransactions.map(t => ({
       ...t,
+      unit: normalizeUnitName(t.unit),
       id: t.id || Date.now().toString() + Math.random().toString(36).substring(2, 9),
       amount: parseFloat(t.amount) || 0
     }));
@@ -140,7 +177,8 @@ export const DataProvider = ({ children }) => {
   return (
     <DataContext.Provider value={{ 
       transactions, addTransaction, importData, clearData,
-      unitMetadata, updateUnitMetadata, isLoaded, error
+      unitMetadata, updateUnitMetadata, isLoaded, error,
+      user, login, logout
     }}>
       {children}
     </DataContext.Provider>

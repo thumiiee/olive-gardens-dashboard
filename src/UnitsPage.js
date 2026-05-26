@@ -1,6 +1,7 @@
 import { Box, Typography, Grid } from "@mui/material";
 import UnitCard from "./UnitCard";
 import { useData } from "./DataContext";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
 
 function UnitsPage() {
   const { transactions, unitMetadata, isLoaded, error } = useData();
@@ -20,7 +21,7 @@ function UnitsPage() {
   }, {});
 
   // The default units that should always appear
-  const defaultUnits = ["Flat 1", "Flat 2", "Flat 3", "Flat 4", "Flat 5", "Flat 6", "Flat 7", "Airbnb"];
+  const defaultUnits = ["Flat 1", "Flat 2", "Flat 3", "Flat 4", "Flat 5", "Flat 6", "Flat 7", "Flat 8"];
   
   // Also include any dynamically discovered units from the spreadsheet not in our default list
   const allUnitNames = Array.from(new Set([...defaultUnits, ...Object.keys(unitStats)]));
@@ -39,13 +40,18 @@ function UnitsPage() {
 
   return (
     <Box>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight={700} color="text.primary" gutterBottom>
-          Units Performance
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Detailed breakdown of income and expenses for each flat and the Airbnb.
-        </Typography>
+      <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ p: 1, bgcolor: 'primary.light', borderRadius: '12px', color: 'primary.dark', display: 'flex' }}>
+          <HomeWorkIcon fontSize="large" />
+        </Box>
+        <Box>
+          <Typography variant="h4" fontWeight={800} color="text.primary" gutterBottom>
+            Units Performance
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Detailed breakdown of income and expenses for each flat and the Airbnb.
+          </Typography>
+        </Box>
       </Box>
 
       <Grid container spacing={3}>
