@@ -1,70 +1,139 @@
-# Getting Started with Create React App
+﻿# Olive Gardens Property Management Portal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React single-page app for managing rental income, expenses, tenant details, and unit performance. This project is built with Create React App, Material UI, React Router, and Supabase integration.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- Dashboard with income, expenses, and profit summaries
+- Transaction ledger and expense review pages
+- Unit performance overview and detailed unit pages
+- Tenant management with lease status filters
+- Excel/XLSX upload and import support for multiple spreadsheet formats
+- Settings page with account/sign-out flow
+- Simulated login experience for local preview
 
-### `npm start`
+## Tech stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- React 18
+- Create React App
+- Material UI v9
+- React Router v7
+- Supabase JS client
+- Chart.js + react-chartjs-2
+- xlsx for spreadsheet parsing
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Prerequisites
 
-### `npm test`
+- Node.js 18 or later
+- npm 10 or later
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Setup
 
-### `npm run build`
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/thumiiee/olive-gardens-dashboard.git
+   cd my-web-app
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file at the project root with your Supabase values:
+   ```env
+   REACT_APP_SUPABASE_URL=https://<project>.supabase.co
+   REACT_APP_SUPABASE_ANON_KEY=<anon-key>
+   ```
+4. Do not commit `.env` to GitHub.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Running locally
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Start the app in development mode:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm start
+```
 
-### `npm run eject`
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Build for production
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm run build
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The production-ready files will be created in the `build/` folder.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Deployment
 
-## Learn More
+### Netlify
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. Create a new site from Git.
+2. Connect your GitHub repo.
+3. Set the build command to:
+   ```bash
+   npm run build
+   ```
+4. Set the publish directory to:
+   ```bash
+   build
+   ```
+5. Add environment variables in Netlify site settings:
+   - `REACT_APP_SUPABASE_URL`
+   - `REACT_APP_SUPABASE_ANON_KEY`
+6. Deploy and share the site URL.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Vercel
 
-### Code Splitting
+1. Import the GitHub repo in Vercel.
+2. Confirm the framework is Create React App.
+3. Use these settings:
+   - Build command: `npm run build`
+   - Output directory: `build`
+4. Add env vars under Project > Settings > Environment Variables.
+5. Deploy and share the Vercel URL.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### GitHub Pages
 
-### Analyzing the Bundle Size
+This repository includes a GitHub Actions workflow that deploys the app on every push to `main`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+1. Make sure `.github/workflows/deploy.yml` exists in the repo.
+2. Confirm `homepage` is set in `package.json` to:
+   ```json
+   "homepage": "https://thumiiee.github.io/olive-gardens-dashboard"
+   ```
+3. Commit and push your changes to `main`.
+4. GitHub Actions will automatically build and deploy the app.
 
-### Making a Progressive Web App
+If you prefer the classic `gh-pages` package deploy flow instead, you can still use:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm install --save-dev gh-pages
+```
 
-### Advanced Configuration
+and then run:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```bash
+npm run deploy
+```
 
-### Deployment
+## Sharing the running app only
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Host the app on Netlify or Vercel and send the live URL.
+- Do not share `.env` or Supabase keys.
+- If the client only needs a preview, a hosted app URL is best.
 
-### `npm run build` fails to minify
+## Notes
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- The current authentication is simulated locally in `src/DataContext.js`.
+- For a real client deployment, enable Supabase Auth and secure session handling.
+- Keep production environment variables private in your hosting provider.
+
+## Helpful files
+
+- `PROJECT_BLUEPRINT.md` — project audit and feature summary
+- `src/supabaseClient.js` — Supabase client configuration
+- `src/DataContext.js` — app state, Supabase logic, and auth stubs
+
+## Need help?
+
+If you want, I can also add a `.env.example` file and a deploy-ready GitHub Actions workflow for this project.
