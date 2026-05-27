@@ -22,7 +22,7 @@ function LoginPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
@@ -32,13 +32,13 @@ function LoginPage() {
       return;
     }
     
-    const result = login(email, password);
+    const result = await login(email, password);
     if (!result.success) {
       setErrorMsg(result.error);
     }
   };
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setSuccessMsg("");
@@ -63,7 +63,7 @@ function LoginPage() {
       return;
     }
     
-    const result = registerUser(email, password, name);
+    const result = await registerUser(email, password, name);
     if (!result.success) {
       setErrorMsg(result.error);
     } else {

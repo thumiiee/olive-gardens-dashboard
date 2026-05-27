@@ -43,51 +43,135 @@ export const DataProvider = ({ children }) => {
   // Authentication State
   const [user, setUser] = useState(null);
 
-  const login = (email, password) => {
-    const allowedUsers = getAllowedUsers();
-    const allowedUser = allowedUsers.find(u => u.email === email && u.password === password);
-    
-    if (!allowedUser) {
-      return { success: false, error: 'Invalid email or password. Access denied.' };
+  const login = async (email, password) => {
+    try {
+      // 1. Try to verify user credentials using the remote Supabase 'managers' table
+      const { data, error } = await supabase
+        .from('managers')
+        .select('*')
+        .eq('email', email)
+        .eq('password', password)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        // Fallback: Check local predefined allowed users and local storage registered users
+        const allowedUsers = getAllowedUsers();
+        const allowedUser = allowedUsers.find(u => u.email === email && u.password === password);
+        if (!allowedUser) {
+          return { success: false, error: 'Invalid email or password. Access denied.' };
+        }
+        
+        const userObj = {
+          name: allowedUser.name,
+          email: allowedUser.email,
+          role: allowedUser.role,
+          avatar: allowedUser.name.charAt(0).toUpperCase()
+        };
+        
+        setUser(userObj);
+        localStorage.setItem('currentUser', JSON.stringify(userObj));
+        return { success: true };
+      }
+
+      // Found in Supabase
+      const userObj = {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        avatar: data.name.charAt(0).toUpperCase()
+      };
+      
+      setUser(userObj);
+      localStorage.setItem('currentUser', JSON.stringify(userObj));
+      return { success: true };
+    } catch (err) {
+      console.warn("Database login verification failed. Falling back to local verification:", err);
+      // Failover to local storage
+      const allowedUsers = getAllowedUsers();
+      const allowedUser = allowedUsers.find(u => u.email === email && u.password === password);
+      if (!allowedUser) {
+        return { success: false, error: 'Invalid email or password. Access denied.' };
+      }
+      
+      const userObj = {
+        name: allowedUser.name,
+        email: allowedUser.email,
+        role: allowedUser.role,
+        avatar: allowedUser.name.charAt(0).toUpperCase()
+      };
+      
+      setUser(userObj);
+      localStorage.setItem('currentUser', JSON.stringify(userObj));
+      return { success: true };
     }
-    
-    const userObj = {
-      name: allowedUser.name,
-      email: allowedUser.email,
-      role: allowedUser.role,
-      avatar: allowedUser.name.charAt(0).toUpperCase()
-    };
-    
-    setUser(userObj);
-    // Persist session to localStorage
-    localStorage.setItem('currentUser', JSON.stringify(userObj));
-    
-    return { success: true };
   };
 
-  const registerUser = (email, password, name) => {
-    const allowedUsers = getAllowedUsers();
-    
-    if (allowedUsers.find(u => u.email === email)) {
-      return { success: false, error: 'This email is already registered.' };
-    }
-
-    const newUser = {
-      email,
-      password,
-      name,
-      role: 'User'
-    };
-
+  const registerUser = async (email, password, name) => {
     try {
-      const stored = localStorage.getItem('registeredUsers') || '[]';
-      const registered = JSON.parse(stored);
-      registered.push(newUser);
-      localStorage.setItem('registeredUsers', JSON.stringify(registered));
+      // 1. Try to register user in remote Supabase 'managers' table
+      const { data: existingUser, error: checkError } = await supabase
+        .from('managers')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existingUser) {
+        return { success: false, error: 'This email is already registered.' };
+      }
+
+      const { error: insertError } = await supabase
+        .from('managers')
+        .insert([{
+          email,
+          password,
+          name,
+          role: 'User'
+        }]);
+
+      if (insertError) throw insertError;
+      
+      // Sync locally as fallback
+      try {
+        const stored = localStorage.getItem('registeredUsers') || '[]';
+        const registered = JSON.parse(stored);
+        if (!registered.some(u => u.email === email)) {
+          registered.push({ email, password, name, role: 'User' });
+          localStorage.setItem('registeredUsers', JSON.stringify(registered));
+        }
+      } catch (e) {
+        console.warn("Failed to write user local storage cache:", e);
+      }
+
       return { success: true };
-    } catch (e) {
-      console.error('Error saving registered user:', e);
-      return { success: false, error: 'Error creating account. Please try again.' };
+    } catch (err) {
+      console.warn("Error registering user to remote database, falling back to local storage:", err);
+      // Fallback to local storage
+      const allowedUsers = getAllowedUsers();
+      if (allowedUsers.some(u => u.email === email)) {
+        return { success: false, error: 'This email is already registered.' };
+      }
+
+      const newUser = {
+        email,
+        password,
+        name,
+        role: 'User'
+      };
+
+      try {
+        const stored = localStorage.getItem('registeredUsers') || '[]';
+        const registered = JSON.parse(stored);
+        registered.push(newUser);
+        localStorage.setItem('registeredUsers', JSON.stringify(registered));
+        return { success: true };
+      } catch (e) {
+        console.error('Error saving registered user locally:', e);
+        return { success: false, error: 'Error creating account. Please try again.' };
+      }
     }
   };
 

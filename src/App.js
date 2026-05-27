@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HashRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -85,20 +85,18 @@ function AppContent() {
   }
 
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/units" element={<UnitsPage />} />
-          <Route path="/units/:unitId" element={<UnitDetailsPage />} />
-          <Route path="/transactions" element={<TransactionsPage />} />
-          <Route path="/expenses" element={<ExpensesPage />} />
-          <Route path="/data-entry" element={<DataEntryPage />} />
-          <Route path="/tenants" element={<TenantsPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/units" element={<UnitsPage />} />
+        <Route path="/units/:unitId" element={<UnitDetailsPage />} />
+        <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/expenses" element={<ExpensesPage />} />
+        <Route path="/data-entry" element={<DataEntryPage />} />
+        <Route path="/tenants" element={<TenantsPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+      </Routes>
+    </Layout>
   );
 }
 
@@ -106,9 +104,11 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <DataProvider>
-        <AppContent />
-      </DataProvider>
+      <Router>
+        <DataProvider>
+          <AppContent />
+        </DataProvider>
+      </Router>
     </ThemeProvider>
   );
 }
