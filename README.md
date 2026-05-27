@@ -1,5 +1,7 @@
 ﻿# Olive Gardens Property Management Portal
 
+[![GitHub Pages](https://github.com/thumiiee/olive-gardens-dashboard/actions/workflows/deploy.yml/badge.svg)](https://github.com/thumiiee/olive-gardens-dashboard/actions/workflows/deploy.yml)
+
 A React single-page app for managing rental income, expenses, tenant details, and unit performance. This project is built with Create React App, Material UI, React Router, and Supabase integration.
 
 ## Features

@@ -11,28 +11,69 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useData } from "./DataContext";
 
 function LoginPage() {
-  const { login } = useData();
+  const { login, registerUser } = useData();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleLoginSubmit = (e) => {
     e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+    
     if (!email || !password) {
       setErrorMsg("Please enter both email and password.");
       return;
     }
-    // Simple simulated check: accepts any valid email format and standard password
-    if (email.includes("@") && password.length >= 4) {
-      login(email, password);
-    } else {
-      setErrorMsg("Invalid email format or password must be at least 4 characters.");
+    
+    const result = login(email, password);
+    if (!result.success) {
+      setErrorMsg(result.error);
     }
   };
 
-  const handleQuickLogin = () => {
-    login("manager@olivegardens.com", "admin123");
+  const handleRegisterSubmit = (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+    
+    if (!email || !password || !name || !confirmPassword) {
+      setErrorMsg("Please fill in all fields.");
+      return;
+    }
+    
+    if (!email.includes("@")) {
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+    
+    if (password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters.");
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setErrorMsg("Passwords do not match.");
+      return;
+    }
+    
+    const result = registerUser(email, password, name);
+    if (!result.success) {
+      setErrorMsg(result.error);
+    } else {
+      setSuccessMsg("Account created! You can now sign in with your credentials.");
+      setEmail("");
+      setPassword("");
+      setName("");
+      setConfirmPassword("");
+      setTimeout(() => setIsRegistering(false), 2000);
+    }
   };
 
   return (
@@ -89,7 +130,14 @@ function LoginPage() {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit}>
+          {successMsg && (
+            <Alert severity="success" sx={{ mb: 3, borderRadius: "12px" }}>
+              {successMsg}
+            </Alert>
+          )}
+
+          {!isRegistering ? (
+            <form onSubmit={handleLoginSubmit}>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
               <TextField
                 fullWidth
@@ -159,52 +207,143 @@ function LoginPage() {
                 Sign In
               </Button>
             </Box>
-          </form>
+            </form>
+          ) : (
+            <form onSubmit={handleRegisterSubmit}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                variant="outlined"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  }
+                }}
+              />
 
-          {/* Quick Login Divider */}
-          <Box 
-            sx={{ 
-              display: "flex", 
-              alignItems: "center", 
-              justifyContent: "center", 
-              my: 3, 
-              position: "relative" 
-            }}
-          >
-            <Box sx={{ width: "100%", height: "1px", backgroundColor: "rgba(0, 0, 0, 0.08)" }} />
-            <Typography 
-              variant="caption" 
-              color="text.secondary" 
-              sx={{ 
-                position: "absolute", 
-                backgroundColor: "rgba(252, 253, 251, 1)", 
-                px: 2 
+              <TextField
+                fullWidth
+                label="Email Address"
+                variant="outlined"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailIcon sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  }
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Password"
+                variant="outlined"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  }
+                }}
+              />
+
+              <TextField
+                fullWidth
+                label="Confirm Password"
+                variant="outlined"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LockIcon sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  }
+                }}
+              />
+
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  borderRadius: "12px",
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  boxShadow: "0 6px 20px rgba(88, 129, 87, 0.2)",
+                  "&:hover": {
+                    boxShadow: "0 8px 24px rgba(88, 129, 87, 0.3)",
+                  }
+                }}
+              >
+                Create Account
+              </Button>
+            </Box>
+            </form>
+          )}
+
+          {/* Toggle Button */}
+          <Box sx={{ textAlign: "center", mt: 3 }}>
+            <Button
+              color="primary"
+              sx={{ fontWeight: 600 }}
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setErrorMsg("");
+                setSuccessMsg("");
               }}
             >
-              OR
-            </Typography>
+              {isRegistering ? "Already have an account? Sign In" : "Need an account? Create one"}
+            </Button>
           </Box>
-
-          {/* Quick Login Button */}
-          <Button
-            variant="outlined"
-            size="large"
-            fullWidth
-            onClick={handleQuickLogin}
-            sx={{
-              py: 1.5,
-              borderRadius: "12px",
-              fontWeight: 600,
-              color: "primary.main",
-              borderColor: "primary.light",
-              "&:hover": {
-                borderColor: "primary.main",
-                backgroundColor: "rgba(88, 129, 87, 0.04)"
-              }
-            }}
-          >
-            Quick Manager Login
-          </Button>
         </CardContent>
       </Card>
     </Box>

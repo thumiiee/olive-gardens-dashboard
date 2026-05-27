@@ -1,16 +1,25 @@
 import { useState } from 'react';
 import { 
   Box, Typography, Card, CardContent, Button, TextField, 
-  Select, MenuItem, InputLabel, FormControl, Grid, Alert
+  Select, MenuItem, InputLabel, FormControl, Grid, Alert,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  TableContainer, Table, TableHead, TableRow, TableCell, TableBody,
+  Paper, Chip
 } from "@mui/material";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DownloadIcon from '@mui/icons-material/Download';
+import HistoryIcon from '@mui/icons-material/History';
+import WarningIcon from '@mui/icons-material/Warning';
 import * as XLSX from 'xlsx';
 import { useData } from './DataContext';
 
 function DataEntryPage() {
-  const { addTransaction, importData, clearData } = useData();
+  const { addTransaction, importData, clearData, uploads, addUploadRecord } = useData();
   const [successMsg, setSuccessMsg] = useState("");
+  
+  // State for duplicate warnings and pending imports
+  const [openDialog, setOpenDialog] = useState(false);
+  const [pendingImport, setPendingImport] = useState(null);
   
   // Manual Entry State
   const [formData, setFormData] = useState({
@@ -71,6 +80,28 @@ function DataEntryPage() {
     }
 
     return str; // Return as-is if all else fails
+  };
+
+  // Helper function to compute SHA-256 hash of a file
+  const computeFileHash = async (file) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return hashHex;
+    } catch (e) {
+      console.error("Error hashing file:", e);
+      // Fast deterministic fallback if crypto.subtle is blocked (non-secure context)
+      let hash = 0;
+      const str = file.name + file.size + file.lastModified;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return 'fallback-' + Math.abs(hash).toString(16);
+    }
   };
 
   const handleFileUpload = (e) => {
@@ -253,9 +284,27 @@ function DataEntryPage() {
           return;
         }
 
-        importData(formattedData);
-        setSuccessMsg(`Successfully imported ${formattedData.length} records! (${formatDetected} Format)`);
-        setTimeout(() => setSuccessMsg(""), 5000);
+        // Compute hash and check for duplicate before importing
+        computeFileHash(file).then((fileHash) => {
+          const duplicate = uploads ? uploads.find(u => u.file_hash === fileHash) : null;
+          
+          if (duplicate) {
+            setPendingImport({
+              data: formattedData,
+              filename: file.name,
+              rowCount: formattedData.length,
+              hash: fileHash,
+              format: formatDetected,
+              duplicateInfo: duplicate
+            });
+            setOpenDialog(true);
+          } else {
+            importData(formattedData);
+            addUploadRecord(file.name, formattedData.length, fileHash);
+            setSuccessMsg(`Successfully imported ${formattedData.length} records! (${formatDetected} Format)`);
+            setTimeout(() => setSuccessMsg(""), 5000);
+          }
+        });
       } catch (error) {
         console.error("Error reading file:", error);
         alert("Failed to read file. Please ensure it is a valid Excel or CSV file.");
@@ -263,6 +312,23 @@ function DataEntryPage() {
     };
     reader.readAsBinaryString(file);
     e.target.value = null; // reset input
+  };
+
+  const handleConfirmImport = () => {
+    if (pendingImport) {
+      const { data, filename, rowCount, hash, format } = pendingImport;
+      importData(data);
+      addUploadRecord(filename, rowCount, hash);
+      setSuccessMsg(`Successfully imported ${rowCount} records! (${format} Format)`);
+      setTimeout(() => setSuccessMsg(""), 5000);
+    }
+    setOpenDialog(false);
+    setPendingImport(null);
+  };
+
+  const handleCancelImport = () => {
+    setOpenDialog(false);
+    setPendingImport(null);
   };
 
   return (
@@ -394,6 +460,118 @@ function DataEntryPage() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Upload History Section */}
+      <Box mt={4}>
+        <Card sx={{ border: '1px solid rgba(88, 129, 87, 0.12)', boxShadow: '0 10px 30px rgba(0,0,0,0.03)' }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <Box sx={{ p: 1, bgcolor: 'primary.light', borderRadius: '8px', color: 'primary.dark', display: 'flex', opacity: 0.85 }}>
+                <HistoryIcon />
+              </Box>
+              <Typography variant="h6" fontWeight={700} color="text.primary">
+                Spreadsheet Upload History
+              </Typography>
+            </Box>
+            
+            {!uploads || uploads.length === 0 ? (
+              <Box sx={{ py: 6, textAlign: 'center', bgcolor: 'rgba(239, 242, 236, 0.5)', borderRadius: '12px', border: '1px dashed rgba(88, 129, 87, 0.2)' }}>
+                <Typography variant="body1" color="text.secondary" fontWeight={500}>
+                  No spreadsheets uploaded yet.
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  Import an Excel or CSV file to start tracking your upload history.
+                </Typography>
+              </Box>
+            ) : (
+              <TableContainer component={Paper} sx={{ borderRadius: '12px', boxShadow: 'none', border: '1px solid rgba(0, 0, 0, 0.08)' }}>
+                <Table>
+                  <TableHead sx={{ bgcolor: 'rgba(88, 129, 87, 0.05)' }}>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 650, color: 'text.primary' }}>Filename</TableCell>
+                      <TableCell sx={{ fontWeight: 650, color: 'text.primary' }}>Upload Date</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 650, color: 'text.primary' }}>Rows Imported</TableCell>
+                      <TableCell align="center" sx={{ fontWeight: 650, color: 'text.primary' }}>Status</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {uploads.map((upload, idx) => (
+                      <TableRow key={upload.id || idx} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                        <TableCell sx={{ fontWeight: 500, color: 'text.primary' }}>
+                          {upload.filename}
+                        </TableCell>
+                        <TableCell color="text.secondary">
+                          {upload.uploaded_at ? new Date(upload.uploaded_at).toLocaleString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : 'N/A'}
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          {upload.row_count}
+                        </TableCell>
+                        <TableCell align="center">
+                          <Chip 
+                            label="Imported Successfully" 
+                            size="small" 
+                            sx={{ 
+                              bgcolor: 'rgba(88, 129, 87, 0.12)', 
+                              color: 'primary.dark', 
+                              fontWeight: 600,
+                              borderRadius: '6px'
+                            }} 
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+
+      {/* Duplicate Import Warning Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleCancelImport}
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            p: 1.5,
+            maxWidth: '480px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: '#D9534F', fontWeight: 700 }}>
+          <WarningIcon sx={{ fontSize: 28 }} />
+          Duplicate Import Warning
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2, color: 'text.primary', fontWeight: 500 }}>
+            The spreadsheet file you uploaded appears to be a duplicate.
+          </DialogContentText>
+          <DialogContentText variant="body2" sx={{ bgcolor: 'rgba(217, 83, 79, 0.05)', p: 2, borderRadius: '8px', border: '1px solid rgba(217, 83, 79, 0.15)', mb: 2, color: 'text.primary' }}>
+            <strong>Filename:</strong> {pendingImport?.filename}<br />
+            <strong>Records in file:</strong> {pendingImport?.rowCount}<br />
+            <strong>Previous Import:</strong> {pendingImport?.duplicateInfo?.uploaded_at ? new Date(pendingImport.duplicateInfo.uploaded_at).toLocaleString() : 'N/A'}
+          </DialogContentText>
+          <DialogContentText variant="body2" color="text.secondary">
+            Importing this file again may result in duplicate records in the database. Are you sure you want to proceed?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
+          <Button onClick={handleCancelImport} variant="outlined" color="inherit" sx={{ borderRadius: '8px', px: 2.5 }}>
+            Cancel Import
+          </Button>
+          <Button onClick={handleConfirmImport} variant="contained" color="error" sx={{ borderRadius: '8px', px: 2.5 }}>
+            Import Anyway
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

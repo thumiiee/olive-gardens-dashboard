@@ -11,7 +11,7 @@ import UnitChart from "./UnitChart"; // Bar chart
 import { useData } from "./DataContext";
 
 function Dashboard() {
-  const { transactions, isLoaded, error } = useData();
+  const { transactions, isLoaded, error, user } = useData();
 
   if (!isLoaded) {
     return <Typography>Loading dashboard data...</Typography>;
@@ -35,10 +35,10 @@ function Dashboard() {
         </Box>
         <Box>
           <Typography variant="h4" fontWeight={800} color="text.primary" gutterBottom>
-            Dashboard Overview
+            Welcome, {user?.name}!
           </Typography>
           <Typography variant="subtitle1" color="text.secondary">
-            Welcome back! Here's what's happening with your properties today.
+            Here's what's happening with your properties today.
           </Typography>
         </Box>
       </Box>
