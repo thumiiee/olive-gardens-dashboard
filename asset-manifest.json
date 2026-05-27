@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/olive-gardens-dashboard/static/css/main.431956d1.css",
-    "main.js": "/olive-gardens-dashboard/static/js/main.45a6f33f.js",
+    "main.js": "/olive-gardens-dashboard/static/js/main.deb8160a.js",
     "static/js/453.c62cfc5c.chunk.js": "/olive-gardens-dashboard/static/js/453.c62cfc5c.chunk.js",
     "index.html": "/olive-gardens-dashboard/index.html",
     "main.431956d1.css.map": "/olive-gardens-dashboard/static/css/main.431956d1.css.map",
-    "main.45a6f33f.js.map": "/olive-gardens-dashboard/static/js/main.45a6f33f.js.map",
+    "main.deb8160a.js.map": "/olive-gardens-dashboard/static/js/main.deb8160a.js.map",
     "453.c62cfc5c.chunk.js.map": "/olive-gardens-dashboard/static/js/453.c62cfc5c.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.431956d1.css",
-    "static/js/main.45a6f33f.js"
+    "static/js/main.deb8160a.js"
   ]
 }
