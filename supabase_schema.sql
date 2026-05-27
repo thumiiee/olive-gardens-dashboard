@@ -28,14 +28,35 @@ WITH CHECK (true);
 -- 3. Enable Realtime Publications
 -- Add transactions, units, and uploads tables to the supabase_realtime publication
 -- to push changes to connected clients in real-time.
-BEGIN;
-  -- Remove existing tables from publication if already there to avoid duplicates
-  ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.transactions;
-  ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.units;
-  ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS public.uploads;
+DO $$
+BEGIN
+  -- Add transactions table if not already in publication
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_rel pr 
+    JOIN pg_class c ON pr.prrelid = c.oid 
+    JOIN pg_publication p ON pr.prpubid = p.oid 
+    WHERE p.pubname = 'supabase_realtime' AND c.relname = 'transactions'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.transactions;
+  END IF;
 
-  -- Add tables to realtime publication
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.transactions;
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.units;
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.uploads;
-COMMIT;
+  -- Add units table if not already in publication
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_rel pr 
+    JOIN pg_class c ON pr.prrelid = c.oid 
+    JOIN pg_publication p ON pr.prpubid = p.oid 
+    WHERE p.pubname = 'supabase_realtime' AND c.relname = 'units'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.units;
+  END IF;
+
+  -- Add uploads table if not already in publication
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_rel pr 
+    JOIN pg_class c ON pr.prrelid = c.oid 
+    JOIN pg_publication p ON pr.prpubid = p.oid 
+    WHERE p.pubname = 'supabase_realtime' AND c.relname = 'uploads'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.uploads;
+  END IF;
+END $$;
