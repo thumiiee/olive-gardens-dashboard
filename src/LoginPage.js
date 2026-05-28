@@ -67,7 +67,7 @@ function LoginPage() {
     if (!result.success) {
       setErrorMsg(result.error);
     } else {
-      setSuccessMsg("Account created! You can now sign in with your credentials.");
+      setSuccessMsg(result.message || "Account created! You can now sign in with your credentials.");
       setEmail("");
       setPassword("");
       setName("");

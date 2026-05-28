@@ -1,6 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'sb_publishable__Pa8YP_a1CpGTQsG5IILyA_evQwgAAf'
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrZ2VkeWl3Y3Rvdnhud2lqZHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyNTkzNDMsImV4cCI6MjA5NDgzNTM0M30.XQVw-mvx9kraASdXiGi4ZjweVvexnHzNBLtdTjbXMPQ'
+const rawSupabaseUrl = (process.env.REACT_APP_SUPABASE_URL || '').trim()
+const rawSupabaseAnonKey = (process.env.REACT_APP_SUPABASE_ANON_KEY || '').trim()
+
+const isValidUrl = (value) => {
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+export const isSupabaseConfigured = isValidUrl(rawSupabaseUrl) && !!rawSupabaseAnonKey
+
+export const supabaseConfigError = isSupabaseConfigured
+  ? null
+  : 'Supabase is not configured correctly. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY in .env'
+
+const supabaseUrl = isSupabaseConfigured ? rawSupabaseUrl : 'https://placeholder.supabase.co'
+const supabaseAnonKey = isSupabaseConfigured ? rawSupabaseAnonKey : 'placeholder-anon-key'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)

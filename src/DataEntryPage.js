@@ -16,6 +16,7 @@ import { useData } from './DataContext';
 function DataEntryPage() {
   const { addTransaction, importData, clearData, uploads, addUploadRecord } = useData();
   const [successMsg, setSuccessMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
   
   // State for duplicate warnings and pending imports
   const [openDialog, setOpenDialog] = useState(false);
@@ -34,14 +35,20 @@ function DataEntryPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleManualSubmit = (e) => {
+  const handleManualSubmit = async (e) => {
     e.preventDefault();
     if (!formData.unit || !formData.amount || !formData.category) return;
     
-    addTransaction(formData);
-    setSuccessMsg("Transaction added successfully!");
-    setFormData({ ...formData, amount: '', category: '' }); // reset some fields
-    setTimeout(() => setSuccessMsg(""), 3000);
+    const result = await addTransaction(formData);
+    if (result?.success) {
+      setSuccessMsg("Transaction added successfully!");
+      setErrorMsg("");
+      setFormData({ ...formData, amount: '', category: '' }); // reset some fields
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } else {
+      setErrorMsg(result?.error || "Failed to add transaction.");
+      setTimeout(() => setErrorMsg(""), 5000);
+    }
   };
 
   // Helper function to parse Excel serial dates and formatted date strings
@@ -299,10 +306,19 @@ function DataEntryPage() {
             });
             setOpenDialog(true);
           } else {
-            importData(formattedData);
-            addUploadRecord(file.name, formattedData.length, fileHash);
-            setSuccessMsg(`Successfully imported ${formattedData.length} records! (${formatDetected} Format)`);
-            setTimeout(() => setSuccessMsg(""), 5000);
+            Promise.all([
+              importData(formattedData),
+              addUploadRecord(file.name, formattedData.length, fileHash)
+            ]).then(([importResult, uploadResult]) => {
+              if (importResult?.success && uploadResult?.success) {
+                setSuccessMsg(`Successfully imported ${formattedData.length} records! (${formatDetected} Format)`);
+                setErrorMsg("");
+                setTimeout(() => setSuccessMsg(""), 5000);
+              } else {
+                setErrorMsg(importResult?.error || uploadResult?.error || "Import failed to sync with backend.");
+                setTimeout(() => setErrorMsg(""), 5000);
+              }
+            });
           }
         });
       } catch (error) {
@@ -314,13 +330,21 @@ function DataEntryPage() {
     e.target.value = null; // reset input
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     if (pendingImport) {
       const { data, filename, rowCount, hash, format } = pendingImport;
-      importData(data);
-      addUploadRecord(filename, rowCount, hash);
-      setSuccessMsg(`Successfully imported ${rowCount} records! (${format} Format)`);
-      setTimeout(() => setSuccessMsg(""), 5000);
+      const [importResult, uploadResult] = await Promise.all([
+        importData(data),
+        addUploadRecord(filename, rowCount, hash)
+      ]);
+      if (importResult?.success && uploadResult?.success) {
+        setSuccessMsg(`Successfully imported ${rowCount} records! (${format} Format)`);
+        setErrorMsg("");
+        setTimeout(() => setSuccessMsg(""), 5000);
+      } else {
+        setErrorMsg(importResult?.error || uploadResult?.error || "Import failed to sync with backend.");
+        setTimeout(() => setErrorMsg(""), 5000);
+      }
     }
     setOpenDialog(false);
     setPendingImport(null);
@@ -348,6 +372,7 @@ function DataEntryPage() {
       </Box>
 
       {successMsg && <Alert severity="success" sx={{ mb: 3 }}>{successMsg}</Alert>}
+      {errorMsg && <Alert severity="error" sx={{ mb: 3 }}>{errorMsg}</Alert>}
 
       <Grid container spacing={4}>
         {/* Bulk Upload Section */}
@@ -392,10 +417,15 @@ function DataEntryPage() {
                  <Typography variant="body2" color="error" mb={2}>
                    Danger Zone
                  </Typography>
-                 <Button variant="outlined" color="error" onClick={() => {
+                 <Button variant="outlined" color="error" onClick={async () => {
                    if(window.confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-                     clearData();
-                     setSuccessMsg("All data cleared.");
+                     const result = await clearData();
+                     if (result?.success) {
+                       setSuccessMsg("All data cleared.");
+                       setErrorMsg("");
+                     } else if (result?.error !== 'Clear data cancelled.') {
+                       setErrorMsg(result?.error || "Failed to clear data.");
+                     }
                    }
                  }}>
                    Clear All Data

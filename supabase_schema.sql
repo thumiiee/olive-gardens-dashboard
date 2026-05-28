@@ -14,22 +14,25 @@ CREATE TABLE IF NOT EXISTS public.managers (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Seed the initial managers if they don't already exist
+-- Seed the initial managers with their custom emails if they don't already exist
 INSERT INTO public.managers (email, password, name, role)
 VALUES 
-  ('owner@olivegardens.com', 'owner123', 'Owner', 'Owner'),
-  ('wife@olivegardens.com', 'wife123', 'Wife', 'Co-Manager'),
-  ('programmer@olivegardens.com', 'prog123', 'Programmer', 'Developer')
+  ('tendai.murisa@gmail.com', 'owner123', 'Owner', 'Owner'),
+  ('murisa.mzime@gmail.com', 'wife123', 'Wife', 'Co-Manager'),
+  ('thunbele004@gmail.com', 'prog123', 'Programmer', 'Developer')
 ON CONFLICT (email) DO NOTHING;
 
 -- Configure Row Level Security (RLS) for the managers table
 ALTER TABLE public.managers ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read access" 
+-- Safely recreate policies by dropping them if they exist first
+DROP POLICY IF EXISTS "Allow public read access managers" ON public.managers;
+CREATE POLICY "Allow public read access managers" 
 ON public.managers FOR SELECT 
 USING (true);
 
-CREATE POLICY "Allow public insert access" 
+DROP POLICY IF EXISTS "Allow public insert access managers" ON public.managers;
+CREATE POLICY "Allow public insert access managers" 
 ON public.managers FOR INSERT 
 WITH CHECK (true);
 
@@ -45,11 +48,14 @@ CREATE TABLE IF NOT EXISTS public.uploads (
 -- Configure Row Level Security (RLS) for the uploads table
 ALTER TABLE public.uploads ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read access" 
+-- Safely recreate policies by dropping them if they exist first
+DROP POLICY IF EXISTS "Allow public read access uploads" ON public.uploads;
+CREATE POLICY "Allow public read access uploads" 
 ON public.uploads FOR SELECT 
 USING (true);
 
-CREATE POLICY "Allow public insert access" 
+DROP POLICY IF EXISTS "Allow public insert access uploads" ON public.uploads;
+CREATE POLICY "Allow public insert access uploads" 
 ON public.uploads FOR INSERT 
 WITH CHECK (true);
 
