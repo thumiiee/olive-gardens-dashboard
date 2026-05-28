@@ -55,7 +55,15 @@ export const DataProvider = ({ children }) => {
 
       if (loginError) throw loginError;
       if (!data) {
-        return { success: false, error: 'Invalid email or password. Access denied.' };
+        const { data: existingEmail } = await supabase
+          .from('managers')
+          .select('email')
+          .ilike('email', normalizedEmail)
+          .maybeSingle();
+        if (existingEmail) {
+          return { success: false, error: 'Incorrect password. Please try again.' };
+        }
+        return { success: false, error: 'No account found for this email. Create an account or check the email address.' };
       }
 
       const userObj = createUserObject(data);
